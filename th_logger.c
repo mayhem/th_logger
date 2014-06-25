@@ -46,15 +46,10 @@ Note:
 #include <stdio.h>
 #include "RPi_SHT1x.h"
 
-int sendTempAndHumidity(const char *host, unsigned short port, const char *temp_label, const char *hum_label)
+int readTempAndHumidity(float *temp, float *hum)
 {
-    struct hostent *server;
-    struct sockaddr_in serv_addr;
     unsigned char noError = 1;  
     value humi_val,temp_val;
-    int fd = 0, n = 0;
-    char line1[1024];
-    char line2[1024];
     
     // Wait at least 11ms after power-up (chapter 3.1)
     delay(20); 
@@ -96,12 +91,51 @@ int sendTempAndHumidity(const char *host, unsigned short port, const char *temp_
     // Calculate Temperature and Humidity
     SHT1x_Calc(&humi_val.f, &temp_val.f);
 
+    *temp = temp_val.f;
+    *hum = humi_val.f;
+
+    return 0;
+}
+
+int printTempAndHumidity(void)
+{
+    struct hostent *server;
+    struct sockaddr_in serv_addr;
+    float temp, hum;
+
+    if (readTempAndHumidity(&temp, &hum) != 0)
+    {
+        printf("Cannot read temp/humidity\n");
+        return 1;
+    }
+
+    printf("%0.1f,", temp);
+    printf("%0.1f\n", hum);
+
+    exit(0);
+}
+
+int sendTempAndHumidity(const char *host, unsigned short port, const char *temp_label, const char *hum_label)
+{
+    struct hostent *server;
+    struct sockaddr_in serv_addr;
+    float temp, hum;
+    char line1[1024];
+    char line2[1024];
+    int fd = 0, n = 0;
+
+    if (readTempAndHumidity(&temp, &hum) != 0)
+    {
+        printf("Cannot read temp/humidity\n");
+        return 1;
+    }
+
     //Print the Temperature to the console
-    sprintf(line1, "%s %0.2f %ld\n", temp_label, temp_val.f, time(NULL));
+    sprintf(line1, "%s %0.2f %ld\n", temp_label, temp, time(NULL));
     printf(line1);
 
     //Print the Humidity to the console
-    sprintf(line2, "%s %0.2f %ld\n", hum_label, humi_val.f, time(NULL));
+    sprintf(line2, "%s %0.2f %ld\n", hum_label, hum, time(NULL));
     printf(line2);
 
     fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -150,7 +184,8 @@ int sendTempAndHumidity(const char *host, unsigned short port, const char *temp_
 
 int main (int argc, char *argv[])
 {
-    if (argc != 5)
+
+    if (argc != 5 && argc != 1)
     {
         printf("Usage: th_logger <server> <port> <temp label> <hum label>\n");
         exit(1);
@@ -166,5 +201,8 @@ int main (int argc, char *argv[])
     if(!bcm2835_init())
         return 1;
 
-    return sendTempAndHumidity(argv[1], atoi(argv[2]), argv[3], argv[4]);
+    if (argc == 1)
+        printTempAndHumidity();
+    else
+        return sendTempAndHumidity(argv[1], atoi(argv[2]), argv[3], argv[4]);
 }
