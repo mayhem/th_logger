@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <link rel="shortcut icon" href="/static/images/favicon.gif">
+    <meta http-equiv="refresh" content="60">
+  </head>
+  <body>
+    <div style="text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 35pt">
+       temperature: {{ temp_C }} C {{ temp_F }}<br>
+       humidity: {{ hum }}%
+    </div>
+  </body>
+</html>
