@@ -1,1 +1,4 @@
-*.py
+*.pyc
+th_logger/config.py
+th_logger.db
+ve
