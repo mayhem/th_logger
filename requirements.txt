@@ -1,0 +1,6 @@
+# Install python-smbus system package, then create the VE with:
+# virtualenv --system-site-packages ve
+flask
+flask-restless
+peewee
+flask-debugtoolbar

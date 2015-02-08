@@ -1,1 +1,2 @@
 DB_FILE = "../th_logger.db"
+SECRET_KEY = "CHANGE ME"
